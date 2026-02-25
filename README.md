@@ -1,9 +1,8 @@
 # Enterprise AI Orchestrator
 
 Deterministic AI workflow orchestration layer designed to demonstrate enterprise governance patterns for LLM-driven systems.
-
-This project is not a chatbot.  
-It is a structured orchestration engine that converts natural language requests into validated, role-gated, auditable workflow executions.
+  
+This project is a structured orchestration engine that converts natural language requests into validated, role gated, auditable workflow executions.
 
 ---
 
@@ -247,7 +246,7 @@ This prevents silent execution failures.
 - External identity provider integration
 - Confidence threshold gating
 - Structured schema validation layer
-- SIEM-compatible logging export
+- SIEM compatible logging export
 
 ## Author Positioning
 
