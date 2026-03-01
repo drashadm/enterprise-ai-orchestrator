@@ -21,6 +21,9 @@ ALLOWED WORKFLOWS
 - generate_risk_report
 - generate_financial_report
 - sync_client
+- compliance_policy_review
+- vendor_risk_intake
+- financial_anomaly_summary
 - needs_clarification
 - unsupported
 
@@ -37,6 +40,18 @@ PARAMETER REQUIREMENTS
    Required: client_id (string or int), risk_domain (string; e.g., "credit", "vendor", "cyber", "aml")
    Optional: as_of_date (ISO8601 date), notes (string)
 
+4) compliance_policy_review
+   Required: document_text (string), policy_domain (string), risk_tolerance_level (string; "low"|"medium"|"high")
+   Optional: document_title (string)
+
+5) vendor_risk_intake
+   Required: vendor_name (string), vendor_description (string), access_level (string; "low"|"medium"|"high"), criticality (string; "low"|"medium"|"high")
+   Optional: data_types (array of strings), notes (string)
+
+6) financial_anomaly_summary
+   Required: period (string), risk_tolerance_level (string; "low"|"medium"|"high"), transactions (array of objects)
+   Optional: currency (string), notes (string)
+
 RESPONSE FORMAT (JSON ONLY)
 {
   "schema_version": "1.0",
@@ -50,6 +65,7 @@ RESPONSE FORMAT (JSON ONLY)
 GUIDANCE
 - If the user intent is unclear or required fields are missing: set workflow="needs_clarification", list missing_fields, and set parameters={} (empty).
 - If the request does not match any workflow: set workflow="unsupported" and explain briefly in rationale.
+- If the user provides key=value pairs or "field: value" text, extract those into parameters when they match a workflow's required/optional fields.
 """.strip()
 
 
@@ -57,6 +73,9 @@ ALLOWED_WORKFLOWS = {
     "generate_risk_report",
     "generate_financial_report",
     "sync_client",
+    "compliance_policy_review",
+    "vendor_risk_intake",
+    "financial_anomaly_summary",
     "needs_clarification",
     "unsupported",
 }

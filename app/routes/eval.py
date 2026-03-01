@@ -1,8 +1,13 @@
 from fastapi import APIRouter, Header
+
 from app.services.llm_service import interpret_request
+from app.orchestrator.evaluator import run_all_workflow_suites
 
 router = APIRouter()
 
+# ----------------------------
+# Decision-engine eval (/eval)
+# ----------------------------
 TESTS = [
     {
         "name": "needs_clarification_missing_fields",
@@ -24,9 +29,10 @@ TESTS = [
     },
 ]
 
+
 @router.get("/eval")
 def eval_suite(x_user: str = Header(None)):
-    # Note: eval focuses on LLM decision quality, not RBAC.
+    # Eval focuses on LLM decision quality, not RBAC.
     # x_user included only so you can call it consistently with your other requests.
     results = []
     passed = 0
@@ -58,7 +64,23 @@ def eval_suite(x_user: str = Header(None)):
             })
 
     return {
+        "suite": "decision_engine",
         "passed": passed,
         "total": len(TESTS),
         "results": results
+    }
+
+
+# -----------------------------------
+# Workflow execution eval (/eval/workflows)
+# -----------------------------------
+@router.get("/eval/workflows")
+def eval_workflows(x_user: str = Header(None)):
+    # x_user included for consistency; workflow eval does not rely on it.
+    suite = run_all_workflow_suites()
+    return {
+        "suite": "workflow_execution",
+        "passed": suite.get("passed", 0),
+        "total": suite.get("total", 0),
+        "details": suite,
     }

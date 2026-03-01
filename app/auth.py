@@ -4,6 +4,7 @@ from app.schemas import User
 ROLE_MAP = {
     "finance_user": "finance_analyst",
     "ops_user": "ops_manager",
+    "compliance_user": "compliance_officer",
     "admin_user": "admin"
 }
 

@@ -1,39 +1,89 @@
-# Enterprise AI Orchestrator
-
-Deterministic AI workflow orchestration layer designed to demonstrate enterprise governance patterns for LLM-driven systems.
-  
-This project is a structured orchestration engine that converts natural language requests into validated, role gated, auditable workflow executions.
 
 ---
 
-## Why This Project Exists
+# Enterprise AI Orchestrator
 
-Most AI applications:
+Governance-First Deterministic Control Plane for LLM-Driven Enterprise Systems
 
-- Rely on loosely structured prompts
-- Guess missing inputs
-- Lack explicit workflow contracts
-- Execute without role enforcement
-- Provide little or no audit traceability
+Enterprise AI Orchestrator is a structured orchestration engine that converts natural language requests into validated, role-gated, auditable workflow executions under deterministic control boundaries.
 
-Enterprise environments require the opposite:
+---
 
-- Explicit workflow selection
-- Structured response contracts
-- No-guess parameter policy
-- Role-based authorization before execution
-- Deterministic routing
-- Audit logging with traceability
+# Executive Summary
 
-This project demonstrates those patterns.
+Enterprise AI systems fail when they rely on:
 
-## Core Capabilities
+* Implicit intent inference
+* Loose prompt structures
+* Missing parameter guessing
+* Uncontrolled execution paths
+* No audit traceability
 
-### 1. Strict Decision Contract
+Enterprise environments require:
 
-The LLM must return structured JSON that matches a defined contract before any execution occurs.
+* Explicit workflow contracts
+* Deterministic routing
+* Role-based authorization
+* Schema-validated execution
+* Regression-gated behavior
+* Fail-closed enforcement
 
-#### Decision Contract (Enforced Response Schema)
+**Enterprise AI Orchestrator** demonstrates how LLMs can operate inside a governance-first execution framework without sacrificing control.
+
+---
+
+# Architectural Philosophy
+
+The system separates responsibility between two planes:
+
+## Control Plane
+
+* LLM decision engine
+* Strict JSON contract enforcement
+* Workflow selection
+* Clarification logic
+* Unsupported intent handling
+
+## Execution Plane
+
+* Service-level parameter validation
+* Deterministic risk scoring enforcement
+* Escalation threshold logic
+* Schema validation (Pydantic)
+* Structured output guarantees
+
+LLMs propose.
+Code enforces.
+
+---
+
+# High-Level Execution Flow
+
+```mermaid
+flowchart TD
+    A["Client Request"] --> B["POST /execute"]
+    B --> C["LLM Decision Engine (Strict JSON)"]
+    C --> D["Contract Validation"]
+    D --> E["RBAC Authorization"]
+    E --> F["Workflow Router"]
+    F --> G["Service Layer"]
+    G --> H["Deterministic Enforcement"]
+    H --> I["Schema Validation"]
+    I --> J["Audit Logger (trace_id)"]
+```
+
+Execution requires:
+
+1. Valid contract
+2. Role authorization
+3. Schema compliance
+4. Deterministic enforcement
+
+---
+
+# Strict Decision Contract
+
+The LLM must return exactly:
 
 ```json
 {
@@ -46,220 +96,263 @@ The LLM must return structured JSON that matches a defined contract before any e
 }
 ```
 
-#### Enforcement model:
+Enforcement rules:
 
-- Exactly one workflow must be selected.
-- Required parameters must be present.
-- Missing required parameters trigger `needs_clarification`.
-- Unsupported requests trigger `unsupported`.
-- Invalid or non-JSON responses are rejected and logged.
+* Exactly one workflow must be selected
+* No invented parameters
+* Missing required parameters → `needs_clarification`
+* Unsupported intent → `unsupported`
+* Invalid JSON → rejected
+* Schema version mismatch → rejected
+* Confidence clamped to 0–1
+* Parameters must be an object
 
-This ensures deterministic routing prior to execution.
+Routing is deterministic and protected before execution.
 
-### 2. Clarification Mode (No-Guess Policy)
+---
 
-If required fields are missing:
+# Supported Production Workflows
 
-```json
-{
-  "workflow": "needs_clarification",
-  "missing_fields": ["client_id", "risk_domain"]
-}
-```
+## 1. Compliance Policy Review
 
-The system does not invent or default missing parameters.
+**Purpose:**
+Analyze policy text for compliance risk.
 
-### 3. RBAC Enforcement Model
+**Deterministic controls:**
 
-User identity is provided via `x-user` request header.
+* Risk score clamped 0–100
+* Risk level derived from score
+* Escalation derived from tolerance threshold
+* Violations must include quoted evidence from document text
+* Minimum document length enforced
+* Maximum document length bounded
 
-- Users are mapped to roles.
-- Role-to-workflow authorization is checked before routing execution.
-- Unauthorized workflow attempts are rejected and logged.
-- Current implementation uses a static role map for demonstration purposes.
+Escalation is enforced in code.
 
-This layer is intentionally structured to support replacement with:
+Schema validated.
+Fail-closed on violation.
 
-- OAuth / OIDC
-- SAML
-- External identity providers
+---
 
-### 4. Deterministic Routing Layer
+## 2. Vendor Risk Intake (Production v2)
 
-Execution flow:
+**Purpose:**
+Assess third-party vendor risk.
 
-```mermaid
-flowchart TD
-    A["Client Request"] --> B["FastAPI /execute"]
-    B --> C["LLM Decision - Strict JSON Contract"]
-    C --> D["RBAC Authorization Check"]
-    D --> E["Workflow Router"]
-    E --> F["Service Layer"]
-    F --> G["Audit Logger"]
+**Controls:**
 
-```
-#### Supported workflows:
+* Evidence-anchored required controls and due diligence questions
+* Risk score clamped and normalized
+* Risk level derived deterministically
+* Escalation derived from sensitivity (criticality + access level)
+* “Insufficient information” floor band (20–40)
+* Minimum description length enforced
+* Schema validation (fail closed)
+* Evidence anchoring required in outputs
 
-- `generate_risk_report`
-- `generate_financial_report`
-- `sync_client`
-- `needs_clarification`
-- `unsupported`
+Invalid vendor references are filtered in code.
 
-Routing is explicit and does not depend on ambiguous intent matching.
+---
 
-### 5. Audit Logging
+## 3. Financial Anomaly Summary
 
-Execution logs are persisted to SQLite for local auditability.
+**Purpose:**
+Analyze transaction lists for anomaly signals.
 
-Stored fields include:
+**Enterprise safeguards:**
 
-- `trace_id`
-- `user_id`
-- `role`
-- `request_message`
-- `workflow`
-- `confidence`
-- `decision_json`
-- `result_json`
-- `timestamp`
+* Transactions sanitized and bounded
+* ID whitelisting for flagged results
+* Evidence-anchored flagged transactions (quoted id + observed field)
+* Deterministic insufficiency handling (<N txns, missing timestamps)
+* Score downgrade if high anomaly without anchored evidence
+* Escalation derived from tolerance threshold
+* Schema validation (fail closed)
 
-Example query:
+Flagged results must reference valid transaction IDs.
 
-```python
-import sqlite3
+---
 
-c = sqlite3.connect("data/logs.sqlite")
-cur = c.cursor()
+# RBAC Enforcement
 
-print(cur.execute("""
-SELECT trace_id, workflow, confidence, created_at
-FROM logs
-ORDER BY id DESC
-LIMIT 5
-""").fetchall())
+Role → Workflow allowlist mapping:
 
-c.close()
-```
+* finance_analyst
+* ops_manager
+* compliance_officer
+* admin
 
-SQLite is used for portability and simplicity in this capstone.
-The logging layer is intentionally designed to be migrated to PostgreSQL or an external SIEM system.
+Workflow execution is blocked before dispatch if not authorized.
 
-### 6. Health and Evaluation Endpoints
-
-`GET /health`
-
-Verifies:
-
-- API availability
-- Database connectivity
-
-Example response:
+Unauthorized attempts return structured error:
 
 ```json
 {
-  "status": "ok",
-  "db_ok": true
+  "error": "Forbidden workflow for role",
+  "workflow": "...",
+  "role": "...",
+  "allowed_workflows": [...]
 }
 ```
 
-`GET /eval`
+Designed for upgrade to:
 
-Runs deterministic tests against the decision layer.
+* OAuth / OIDC
+* SAML
+* External IdP
+* Zero-trust service mesh
+
+---
+
+# Evaluation & Regression Gates
+
+Two independent test surfaces:
+
+## Control Plane Tests (`/eval`)
 
 Validates:
 
-- Clarification behavior
-- Unsupported request handling
-- Workflow selection correctness
+* Clarification behavior
+* Unsupported handling
+* Workflow selection
+* Contract stability
 
-Example response:
+## Execution Plane Tests (`/eval/workflows`)
 
-```json
-{
-  "passed": 3,
-  "total": 3,
-  "results": [...]
-}
-```
+Validates:
 
-This provides a lightweight evaluation harness for regression detection.
+* Schema enforcement
+* Deterministic risk mapping
+* Escalation logic
+* Evidence anchoring invariants
+* Missing parameter rejection
+* Insufficient input handling
 
-## **Example Execution**
+All workflows are regression-gated before being considered stable.
 
-### **Request**
+This prevents silent behavior drift.
 
-```json
-{
-  "message": "Generate a cyber risk report for client 123 as of 2026-02-18"
-}
-```
+---
 
-Header:
-```code
-x-user: finance_user
-```
-### **Response**
+# Deterministic Enforcement Model
 
-```json
-{
-  "trace_id": "...",
-  "workflow": "generate_risk_report",
-  "result": {
-    "report": "Risk report generated for client_id=123, domain=cyber, as_of_date=2026-02-18",
-    "status": "success",
-    "inputs": {
-      "client_id": 123,
-      "risk_domain": "cyber",
-      "as_of_date": "2026-02-18"
-    }
-  }
-}
-```
-## Failure Handling Model
+Across all risk workflows:
 
-The system is designed to fail safely.
+| Score Range | Level  |
+| ----------- | ------ |
+| 0–29        | low    |
+| 30–69       | medium |
+| 70–100      | high   |
 
-- Invalid JSON from LLM → request rejected and logged.
-- Missing required fields → clarification mode.
-- Unauthorized workflow → access denied.
-- Service layer exception → logged with `trace_id`.
-- Evaluation suite detects regression in decision behavior.
+Escalation thresholds:
 
-This prevents silent execution failures.
+| Tolerance | Escalate At |
+| --------- | ----------- |
+| low       | ≥ 30        |
+| medium    | ≥ 60        |
+| high      | ≥ 80        |
 
-## Failure Handling Model
+LLM proposes score.
+Code enforces level and escalation.
 
-The system is designed to fail safely.
+---
 
-- Invalid JSON from LLM → request rejected and logged.
-- Missing required fields → clarification mode.
-- Unauthorized workflow → access denied.
-- Service layer exception → logged with `trace_id`.
-- Evaluation suite detects regression in decision behavior.
+# Audit Logging
 
-This prevents silent execution failures.
+All executions include:
 
-## Roadmap
+* trace_id
+* user_id
+* role
+* workflow
+* confidence
+* decision_json
+* result_json
+* timestamp
 
-- PostgreSQL migration via SQLAlchemy
-- External identity provider integration
-- Confidence threshold gating
-- Structured schema validation layer
-- SIEM compatible logging export
+Persisted to SQLite for portability.
 
-## Author Positioning
+Designed for migration to:
 
-Built by an AI Automation & Cloud Systems Architect specializing in:
+* PostgreSQL
+* Cloud-native database
+* SIEM export
+* External observability pipelines
 
-- Financial intelligence systems
-- Secure AI workflow orchestration
-- Agentic enterprise enablement
-- Governance-first LLM integration
-- Observability-driven system design
+Every request is traceable.
 
-## Summary
+---
 
-This project focuses on governance, determinism, and auditability.
+# Failure Handling Model
 
-It demonstrates how AI systems can be integrated into structured, role-gated enterprise environments without sacrificing control.
+Fail-closed design:
+
+* Invalid JSON → rejected
+* Schema validation failure → rejected
+* Missing parameters → clarification mode
+* Unauthorized workflow → rejected
+* Hallucinated IDs → filtered
+* Insufficient input → deterministic fallback band
+* Exceptions logged with trace_id
+
+No silent execution paths.
+
+---
+
+# Production Discipline
+
+Deliberate exclusions (v1 discipline):
+
+* No vector database
+* No RAG layer
+* No auto-scaling infrastructure
+* No uncontrolled workflow expansion
+* No removal of evaluation gates
+
+The objective is architectural maturity and deterministic control.
+
+---
+
+# Roadmap (Post v1)
+
+* PostgreSQL migration via SQLAlchemy
+* External identity provider integration
+* Confidence threshold gating
+* Structured evidence objects (v2)
+* SIEM-compatible logging export
+* Deployment hardening
+
+---
+
+# Author Positioning
+
+Built by an AI Automation & Cloud Systems Architect focused on:
+
+* Financial intelligence systems
+* Deterministic LLM governance
+* Secure AI orchestration layers
+* Enterprise risk workflows
+* Observability-driven system design
+
+---
+
+# Summary
+
+Enterprise AI Orchestrator demonstrates that:
+
+LLMs can operate inside controlled, auditable, deterministic enterprise systems.
+
+This project prioritizes:
+
+* Governance
+* Determinism
+* Evidence anchoring
+* Fail-closed enforcement
+* Regression protection
+* Role-based execution boundaries
+
+Enterprise AI requires control before scale.
+
+This system implements that principle.
+
+---
